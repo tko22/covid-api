@@ -3,7 +3,7 @@ const cors = require('micro-cors')()
 const moment = require('moment-timezone')
 const fetch = require('isomorphic-unfetch')
 const neatCsv = require('neat-csv');
-const { getCountyTimeSeries } = require('../../utils/api')
+const { getRawCountyTimeSeries, getCountyTimeSeries } = require('../../utils/api')
 
 
 export default cors(async (req: NowRequest, res: NowResponse) => {
