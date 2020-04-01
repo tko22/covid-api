@@ -38,11 +38,10 @@ const getCountyTimeSeries = async(county: string) : Promise<any> => {
         }
     ]
     startDate = startDate.add(1, 'days')
-
     // get rest of dates
     while (getJhuTSDateString(startDate) !== getJhuTSDateString(today)) {
-        let dateStr = getJhuTSDateString(startDate)
-        let currPositive = timeSeries[dateStr]
+        const dateStr = getJhuTSDateString(startDate)
+        const currPositive = timeSeries[dateStr]
         ret.push(
             {
                 date: dateStr, 
@@ -53,7 +52,13 @@ const getCountyTimeSeries = async(county: string) : Promise<any> => {
         prev = currPositive
         startDate = startDate.add(1, 'days')
     }
-    return await ret
+    for (let elm in ret) {
+        if (ret[elm].positive == undefined) {
+            console.log(ret[elm])
+        }
+    }
+    const filtered = ret.filter(elm => elm.positive != undefined)
+    return filtered
 }
 
 
