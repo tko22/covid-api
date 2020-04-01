@@ -43,6 +43,9 @@ const getCountyTimeSeries = async(county: string) : Promise<any> => {
     while (getJhuTSDateString(startDate) !== getJhuTSDateString(today)) {
         let dateStr = getJhuTSDateString(startDate)
         let currPositive = timeSeries[dateStr]
+        if (!currPositive) {
+            break
+        }
         ret.push(
             {
                 date: dateStr, 
