@@ -9,9 +9,6 @@ const JHU_DAILY_API = `https://raw.githubusercontent.com/CSSEGISandData/COVID-19
 
 export default cors(async (req: NowRequest, res: NowResponse) => {
     const { county= "" } = req.query
-    
-
-    
 
     const currDate = moment().tz('America/Los_Angeles').format("MM-DD-YYYY")
     const ret = await fetch(`${JHU_DAILY_API}/${currDate}.csv`)
@@ -26,7 +23,7 @@ export default cors(async (req: NowRequest, res: NowResponse) => {
     const filtered = output.filter(place => place.Admin2 == countyTransform)
 
     if (filtered.length > 0){
-        res.json({data: filtered[0]})
+        res.json(filtered[0])
         return
     }
     res.json({error: true, message: "No Data available."})
