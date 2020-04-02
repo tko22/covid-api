@@ -25,15 +25,14 @@ const getCountyTimeSeries = async(county: string) : Promise<any> => {
     if (!timeSeries) {
         return (await null)
     }
-
     const today = getToday()
     let startDate = JHU_START_DATE
-    let prev = timeSeries[getJhuTSDateString(startDate)]
+    let prev = parseInt(timeSeries[getJhuTSDateString(startDate)])
     // initial start date
     let ret = [
         {
             date: getJhuTSDateString(startDate), 
-            positive: timeSeries[getJhuTSDateString(startDate)], 
+            positive: parseInt(timeSeries[getJhuTSDateString(startDate)]), 
             positiveIncrease: 0
         }
     ]
@@ -41,23 +40,22 @@ const getCountyTimeSeries = async(county: string) : Promise<any> => {
     // get rest of dates
     while (getJhuTSDateString(startDate) !== getJhuTSDateString(today)) {
         const dateStr = getJhuTSDateString(startDate)
-        const currPositive = timeSeries[dateStr]
+        const currPositive = timeSeries[dateStr] ? parseInt(timeSeries[dateStr]) : null
+        if (currPositive === null) {
+            startDate = startDate.add(1, 'days')
+            continue
+        }
         ret.push(
             {
                 date: dateStr, 
                 positive: currPositive, 
-                positiveIncrease: currPositive - prev,
+                positiveIncrease: currPositive && prev ? currPositive - prev : null,
             }
         )
         prev = currPositive
         startDate = startDate.add(1, 'days')
     }
-    for (let elm in ret) {
-        if (ret[elm].positive == undefined) {
-            console.log(ret[elm])
-        }
-    }
-    const filtered = ret.filter(elm => elm.positive != undefined)
+    const filtered = ret.filter(elm => elm.positive != null || elm.positiveIncrease != null)
     return filtered
 }
 
