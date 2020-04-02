@@ -3,8 +3,8 @@ const neatCsv = require('neat-csv');
 const { getJHUDailyCSV, getJHUTimeSeriesCSV } = require('./jhuWrapper')
 const { getJhuTSDateString, getToday } = require('./dates')
 
-const JHU_DATE_FORMAT = "M/D/YYYY"
-const JHU_START_DATE = moment("1/22/2020", JHU_DATE_FORMAT)
+const JHU_DATE_FORMAT = "M/D/YY"
+const JHU_START_DATE = moment("1/22/20", JHU_DATE_FORMAT)
 
 
 const getRawCountyTimeSeries = async(county: string) : Promise<any> => {
@@ -40,8 +40,9 @@ const getCountyTimeSeries = async(county: string) : Promise<any> => {
     // get rest of dates
     while (getJhuTSDateString(startDate) !== getJhuTSDateString(today)) {
         const dateStr = getJhuTSDateString(startDate)
-        const currPositive = timeSeries[dateStr] ? parseInt(timeSeries[dateStr]) : null
+        const currPositive = timeSeries[dateStr] != undefined ? parseInt(timeSeries[dateStr]) : null
         if (currPositive === null) {
+            console.log(dateStr, timeSeries[dateStr])
             startDate = startDate.add(1, 'days')
             continue
         }
