@@ -4,8 +4,6 @@ const { getJHUDailyCSV, getJHUTimeSeriesCSV } = require('./jhuWrapper')
 const { getJhuTSDateString, getToday } = require('./dates')
 
 const JHU_DATE_FORMAT = "M/D/YY"
-const JHU_START_DATE = moment("1/22/20", JHU_DATE_FORMAT)
-
 
 const getRawCountyTimeSeries = async(county: string) : Promise<any> => {
     const csvText = await getJHUTimeSeriesCSV("confirmed_US")
@@ -28,7 +26,6 @@ const getCountyTimeSeries = async(county: string) : Promise<any> => {
     const today = getToday()
     let startDate = JHU_START_DATE
     let prev = parseInt(timeSeries[getJhuTSDateString(startDate)])
-    console.log(prev)
     // initial start date
     let ret = [
         {
@@ -38,10 +35,12 @@ const getCountyTimeSeries = async(county: string) : Promise<any> => {
         }
     ]
     startDate = startDate.add(1, 'days')
+    let currPositive
+    let dateStr
     // get rest of dates
     while (getJhuTSDateString(startDate) !== getJhuTSDateString(today)) {
-        const dateStr = getJhuTSDateString(startDate)
-        const currPositive = timeSeries[dateStr] != undefined ? parseInt(timeSeries[dateStr]) : null
+        dateStr = getJhuTSDateString(startDate)
+        currPositive = timeSeries[dateStr] != undefined ? parseInt(timeSeries[dateStr]) : null
         if (currPositive === null) {
             startDate = startDate.add(1, 'days')
             continue
@@ -59,12 +58,13 @@ const getCountyTimeSeries = async(county: string) : Promise<any> => {
         prev = currPositive
         startDate = startDate.add(1, 'days')
     }
-    const filtered = ret.filter(elm => elm.positive != null || elm.positiveIncrease != null)
+    const filtered = ret.filter(elm => elm.positive != undefined && elm.positiveIncrease != undefined)
     return filtered
 }
 
 
 export {
     getCountyTimeSeries,
-    getRawCountyTimeSeries
+    getRawCountyTimeSeries,
+    JHU_DATE_FORMAT,
 }
