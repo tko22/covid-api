@@ -64,13 +64,54 @@ const getCountyTimeSeries = async (county: string) : Promise<any> => {
     return filtered
 }
 
-const getAreaTimeSeries = async (area: string) : Promise<any> => {
-    const counties = areasLookup[area]
-    let countiesSeries = []
-    for (let i = 0; i < counties.length; i++){
-        const x = await getCountyTimeSeries(counties[i])
-        countiesSeries.push(x)
+const processCountyTimeSeries = (timeSeries: Array<any>): Array<any> => {
+    const today = getToday()
+    let startDate = moment("1/22/2020", JHU_DATE_FORMAT)
+    let prev = parseInt(timeSeries[getJhuTSDateString(startDate)])
+    // initial start date
+    let ret = [
+        {
+            date: getJhuTSDateString(startDate), 
+            positive: parseInt(timeSeries[getJhuTSDateString(startDate)]), 
+            positiveIncrease: 0
+        }
+    ]
+    startDate = startDate.add(1, 'days')
+    let currPositive
+    let dateStr
+    // get rest of dates
+    while (getJhuTSDateString(startDate) !== getJhuTSDateString(today)) {
+        dateStr = getJhuTSDateString(startDate)
+        currPositive = timeSeries[dateStr] != undefined ? parseInt(timeSeries[dateStr]) : null
+        if (currPositive === null) {
+            startDate = startDate.add(1, 'days')
+            continue
+        }
+    
+
+        const increase = prev != undefined ? currPositive - prev : null
+        ret.push(
+            {
+                date: dateStr, 
+                positive: currPositive, 
+                positiveIncrease: increase,
+            }
+        )
+        prev = currPositive
+        startDate = startDate.add(1, 'days')
     }
+    const filtered = ret.filter(elm => elm.positive != undefined && elm.positiveIncrease != undefined)
+    return filtered
+}
+
+
+const getAreaTimeSeries = async (area: string) : Promise<any> => {
+    const csvText = await getJHUTimeSeriesCSV("confirmed_US")
+    const output = await neatCsv(csvText)
+
+    const counties = areasLookup[area]
+    const countiesDataFiltered = output.filter(place => counties.includes(place.Admin2))
+    const countiesSeries = countiesDataFiltered.map(county => processCountyTimeSeries(county))
 
     let ret = countiesSeries[0]
     for (let i = 1; i < counties.length; i++){
@@ -85,5 +126,6 @@ export {
     getCountyTimeSeries,
     getRawCountyTimeSeries,
     JHU_DATE_FORMAT,
-    getAreaTimeSeries
+    getAreaTimeSeries,
+    processCountyTimeSeries
 }
